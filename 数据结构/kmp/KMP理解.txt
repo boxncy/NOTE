@@ -1,0 +1,60 @@
+string a="aabaabac";
+next[]=[-1,0,1,0,1,2,3,4,0]
+一句话就是：***长度为i的数组前后缀最大相等的长度***
+0 -1
+1  0
+2  1
+3  0 ==找next
+4  1
+5  2
+6  3
+7  4
+8  0 ==找next
+
+
+Q1:为什么连续4次相等，第5次不等后，要找到next[4]的位置？
+	因为，在该位置上不等aabaa!=aabac，就要向前找aaba的最大公共前后缀next[4],aa==ac?还不等则再向前找
+————————————————
+版权声明：本文为CSDN博主「yyzsir」的原创文章，遵循CC 4.0 BY-SA版权协议，转载请附上原文出处链接及本声明。
+原文链接：https://blog.csdn.net/yyzsir/article/details/89462339
+
+Q2:KMP的优化 nextval是什么原理？
+
+
+void Getnext(int next[],String t)
+{
+   int j=0,k=-1;
+   next[0]=-1;
+   while(j<t.length-1)
+   {
+      if(k == -1 || t[j] == t[k])
+      {
+         j++;k++;
+         next[j] = k;
+      }
+      else k = next[k];//此语句是这段代码最反人类的地方，如果你一下子就能看懂，那么请允许我称呼你一声大神！
+   }
+}
+————————————————
+版权声明：本文为CSDN博主「Junepeak」的原创文章，遵循CC 4.0 BY-SA版权协议，转载请附上原文出处链接及本声明。
+原文链接：https://blog.csdn.net/dark_cy/article/details/88698736
+
+int KMP(String s,String t)
+{
+   int next[MaxSize],i=0;j=0;
+   Getnext(t,next);
+   while(i<s.length&&j<t.length)
+   {
+      if(j==-1 || s[i]==t[j])
+      {
+         i++;
+         j++;
+      }
+      else j=next[j];               //j回退。。。
+   }
+   if(j>=t.length)
+       return (i-t.length);         //匹配成功，返回子串的位置
+   else
+      return (-1);                  //没找到
+
+————————————————
