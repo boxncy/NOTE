@@ -336,7 +336,7 @@ void Person<T1,T1>::Func(){}//声明了Person作用域 与 <T1,T1>模板参数�
 
 内容是**容器**、**算法**、**迭代器**、**仿函数**、**适配器**、**空间配置器**
 
-STL基本都采用了模板，**容器**和**算法**通过**迭代器**来连接
+STL基本都采用了模板，**容器**和**算法**通过**迭代器**来连接,**所有不支持随机访问的容器，不可以用标准算法，只能用内部算法**
 
 仿函数：类似函数，可作为算法的策略
 
@@ -370,6 +370,12 @@ void myPrint(val)
     cout<<val<<endl;
 }
 for_each(v.begin(),v.end(),myPrint);//第三个参数（函数名）利用回调
+
+for(vector<int>::iterator elem : vector1)
+for(auto elem:vector_1)  //一种遍历容器方式，可以是任何容器，注意auto主要是可以代替迭代器那种比较长的写法
+{
+    
+}
 ```
 
 ### 3.1 string
@@ -408,241 +414,478 @@ for_each(v.begin(),v.end(),myPrint);//第三个参数（函数名）利用回调
 - string s.append("fsfs",2);//表示拼接前两个
 - string s.append("fsfs",2，1);//表示第二个开始，拼接一个
 
-#### 3.3.4 string查找和替换
+#### 3.1.4 string查找和替换
 
 -  str1.find("de");//查找后返回int，表示字符串起始位置下标，若无返回-1
-- str1.rfind("de");//从右向左查找
+-  str1.rfind("de");//从右向左查找
+-  str1.replace(1,3,"1111");//从1开始3个字符，替换为1111
 
-## 4 指针与内存管理
+#### 3.1.5 string字符串比较
 
-**常量指针**：指向的值为常量，可以理解为const *类型
+**比较是通过逐个ascll码比较**
+
+- int compare(const string &s) const; // 0 = ,1 > , -1 <
+- str1.compare(str2)==0;
+
+#### 3.1.6 string字符存取，访问单个字符
+
+- str1[i]="s"
+- str1.at[i]="s"
+
+#### 3.1.7 string插入删除
+
+- str1.insert(1,"111");  //1位置后插入111
+- str1.erase(1,"111");  //1位置删除111
+
+#### 3.1.8 string子串
+
+- substr = str1.substr(1,3);  // 1 位置截取3个
+
+------
+
+### 3.2 vector
+
+单端数组，可以动态扩展，找到大空间，把原数据拷到新空间，释放原空间
+
+![image-20210930141702656](C:\Users\boxnc\AppData\Roaming\Typora\typora-user-images\image-20210930141702656.png)
+
+#### 3.2.1 vector构造
 
 ```c++
-int const* ptr;
+ vector<int> v;
+ vector(v.begin(),v.end());  //前闭后开，end指向最后一个元素下一个位置
+ vector(n,elem);			 //n个elem
+ vector(const vector &v);	 //拷贝
+
+例：
+    vector<int>v2(v1);
 ```
 
-**指针常量**：指向的地址为常量，区别为*的位置
+#### 3.2.2 vector赋值
 
 ```c++
-int *const ptr;
+vector<int>v1;
+vector<int>v2=v1;  //等号赋值
+vector<int>v3.assign(v1.begin(),v1.end());  //迭代器
+vector<int>v4.assign(10,100)				//10个100
+
+for(vector<int>::iterator it=v.begin();it!=v.end();it++)
 ```
 
-**void指针**与c++11指针类型转换：c中指针都是void无格式指针
+#### 3.2.3 vector容量和大小
+
+- empty();
+- capacity();
+- size();
+- resize(int num); //重新指定长度，比原先长则默认值填充，比原先短则删除后面的元素
+- resize(int num , elem);   //重新指定长度，比原先长则elem填充比原先短则删除后面的元素
+
+####  3.2.4 vector插入删除
+
+- push_back(elem);
+- pop_back();
+- insert(const_iterator pos , elem);
+- insert(const_iterator pos , int count , elem);
+- erase(const_iterator pos);
+- erase(const_iterator start , const_iterator end);
+- clear();
+
+#### 3.2.5 vector数据存取
+
+ **注意[]和at都是随机访问，只能访问连续空间的容器**
+
+- at(int idx);  //返回索引处数据
+- []
+- front();        //返回第一个
+- back();         //返回最后一个
+
+#### 3.2.5 vector互换容器
+
+- swap(vector);
 
 ```c++
-//其他类型指针可直接转换为void*
-int num=1;
-void* void_ptr=&num;
+for(int i=0;i<100000;i++)
+{
+    v1.push_back(i);
+}
 
-//void*转其他类型需要特殊转换，否则报错
-int* ptr =void_ptr;//XXXX错误
-int* ptr =static_cast<int*>(void_ptr);//增加了验证，不会转换const
-int* ptr =（int*）void_ptr;//会转换const
-int* ptr =const_cast<int*>(void_ptr);//会转换const,区别是你知道他转化了const
+//v.capacity此时大于100000
 
-//重新定义类型
-unsigned char* char_ptr=new unsigned char[1024];
-auto ptr=reinterpret_cast<int*>(char_ptr);
+v.resize(3);
+//此时还是大于100000，size=3
 
+vector<int>(v).swap(v);
+//vector<int>(v)创建匿名对象，大小容量为3，与v交换，匿名对象此行后系统回收
 ```
 
-### 4.1 **智能指针**
+#### 3.2.6 vector预留空间
 
-**解决的问题**：空指针野指针，重复释放，new delete不匹配，内存泄漏
+- reserve(int len);  //分配len长度内存，但无初始值，不可访问
+
+------
 
 
 
-#### 4.1.1 **std::unique_ptr**
+### 3.3 deque
 
- **独占指针，所指内存独有，只有这个只能能指向这个内存，不支持拷贝、赋值**
+双端数组，头尾插入删除；
+
+vector头部操作慢，deque快；
+
+支持随机访问，但随机访问vector快；
+
+![image-20211004160353306](C:\Users\boxnc\AppData\Roaming\Typora\typora-user-images\image-20211004160353306.png)
+
+deque工作原理：并不是全部连续的内存空间，有一个**中控器**，其中的缓存区存放真实数据，中控器中放缓存区地址；
+
+![image-20211004160724715](C:\Users\boxnc\AppData\Roaming\Typora\typora-user-images\image-20211004160724715.png)
+
+#### 3.3.1 deque构造函数
 
 ```c++
-//必须直接初始化，未初始化时为空指针
-std::unique_ptr<int> ptr1(new int(10));
-std::unique_ptr<int> ptr2 = std::move(ptr1);//ptr2为唯一的指针
-ptr2.reset();//释放ptr2所指向的内存空间
-//reset的其他用法
-int* ptr=new int(10);
-ptr2.reset(ptr);//释放之前的，并指向ptr
-int *p = ptr2.release();//释放ptr2的控制权，并不会释放内存
+include<deque>
+
+deque<int>d1();    //默认
+deque<int>d2(d1.begin(),d2.end());    //区间
+deque<int>d3(10,1);    //确定元素个数
+deque<int>d4(d1);    //拷贝
 ```
 
-
-
-#### 4.1.2 **std::shared_ptr** 
-
-允许多个该类型指针指向同一个堆内存 **“引用计数”**实现，记录指向同一内存的share-ptr个数，如果个数为零，该堆内存自动删除，支持赋值和复制
+#### 3.3.2 deque赋值
 
 ```c++
-std::share_ptr<int> ptr1(new int(10));
-std::share_ptr<int> ptr2=ptr1;
-std::cout<<"引用个数："<<ptr2.use_count()<<std::endl;//2
+deque<int>v1;
+deque<int>v2=v1;  //等号赋值
+deque<int>v3.assign(v1.begin(),v1.end());  //迭代器
+deque<int>v4.assign(10,100)				//10个100
+```
 
-ptr1.reset();//此时，引用数-1
+#### 3.3.3 deque大小操作
 
-//安全的使用方法，make_share方法，动态分配一个对象的内存，并返回以一个指向此对象的share_ptr;需要指定创建的对象的类型，或者用auto接。
-share_ptr<int> ptr3=make_share<int>(10);
-auto ptr4 = make_share<vector<int>>();
+- empty();
+- **capacity();    （X)     deque没有容量的概念**
+- size();
+- resize(int num); //重新指定长度，比原先长则默认值填充，比原先短则删除后面的元素
+- resize(int num , elem);   //重新指定长度，比原先长则elem填充比原先短则删除后面的元素
 
-//一些操作
-shared_ptr<T> p;
-//空智能指针，可指向类型是T的对象
- 
-if(p)
- //如果p指向一个对象,则是true
- 
-(*p)
-//解引用获取指针所指向的对象
- 
-p -> number == (*p).number;
- 
-p.get();
-//返回p中保存的指针
- 
-swap(p,q);
-//交换p q指针
- 
-p.swap(q);
-//交换p,q指针
- 
-make_shared<T>(args) 
-//返回一个shared_ptr的对象，指向一个动态类型分配为T的对象，用args初始化这个T对象
- 
-shared_ptr<T> p(q)
-//p 是q的拷贝，q的计数器++，这个的使用前提是q的类型能够转化成是T*
+#### 3.3.4 deque插入删除
+
+**两端操作**
+
+- push_back(elem);
+
+- push_front(elem);
+
+- pop_back();
+
+- pop_front();
+
   
-p =q;
-//p的引用计数-1，q的+1,p为零释放所管理的内存
- 
-p.unique();
-//判断引用计数是否是1，是，返回true
- 
-p.use_count();
-//返回和p共享对象的智能指针数量
 
-```
+- insert(const_iterator pos , elem);                             //返回新数据位置
+
+- insert(const_iterator pos , int count , elem);          //无返回
+
+- insert(const_iterator pos , begin,end);                    //插入区间元素，无返回
+
+- erase(const_iterator pos);
+
+- erase(const_iterator start , const_iterator end);    //返回下一个数据位置
+
+- clear();                                                                           //返回下一个数据位置
+
+#### 3.3.5 deque数据存取
+
+- at(int idx);  //返回索引处数据
+- []
+- front();        //返回第一个
+- back();         //返回最后一个
+
+#### 3.3.6 deque排序
+
+- sort(begin，end)；//从小到大，vector也可用，包含头文件algorithm
+
+------
 
 
 
-#### 4.1.3 **std::weak_ptr** 
+### 3.4 stack
 
-辅助share_ptr使用，可从share_ptr/weak_ptr构造,weak_ptr**不会影响引用计数**，指向share_ptr内存，但不拥有该内存，所以不可以直接使用内存资源，除非通过weak_ptr构造一个share_ptr, 成员lock可返回指向内存对应的share_ptr。
+栈，先进后出；
+
+只有栈顶元素可以访问，所以不能遍历；
+
+可以判断是否为空；
+
+可以返回个数；
+
+![image-20211004163058299](C:\Users\boxnc\AppData\Roaming\Typora\typora-user-images\image-20211004163058299.png)
+
+#### 3.4.1 常用接口
+
+- stack<T> stk;
+- stack(const stack &stk);   //拷贝
+
+赋值
+
+- stack = const stack &stk;
+
+数据存取
+
+- push(elem);
+- pop();
+- top();  //返回栈顶元素
+
+大小操作
+
+- empty();
+- size();
+
+### 3.5 queue
+
+队列，先进先出；
+
+只有队头队尾可以访问，随意不能遍历；
+
+
+
+![image-20211004164042179](C:\Users\boxnc\AppData\Roaming\Typora\typora-user-images\image-20211004164042179.png)
+
+#### 3.5.1 queue常用接口
+
+- queue<T> queue;
+- queue(const queue &queue);   //拷贝
+
+赋值
+
+- queue= const stack &queue;
+
+数据存取
+
+- push(elem);
+- pop();
+- back(); 
+- front();
+
+大小操作
+
+- empty();
+- size();
+
+------
+
+
+
+### 3.6 list
+
+stl中是双向循环链表
+
+链表，由**结点**组成；
+
+结点，**数据域**储存数据元素，**指针域**储存下一个结点地址；
+
+快速插入删除，且迭代器不失效，vector失效；
+
+空间大，遍历慢，不可随机访问；
+
+![image-20211004165107752](C:\Users\boxnc\AppData\Roaming\Typora\typora-user-images\image-20211004165107752.png)
+
+#### 3.6.1 list构造
 
 ```c++
-std::share_ptr<int> ptr1(new int(10));
-std::weak_ptr<int> wp = ptr1;//无拥有权
-std::share_ptr<int> ptr2 = wp.lock();
+include<list>
+
+list<int>l1();    //默认
+list<int>l2(l1.begin(),l2.end());    //区间
+list<int>l3(10,1);    //确定元素个数
+list<int>l4(l1);    //拷贝
 ```
 
-
-
-**为什么使用weak_ptr**？
-
-解决share_ptr循环引用问题
-
-如下图，创建ptr_a,ptr_b指向两个对象，m_ptr_a,m_ptr_b又指向互相，当1，3销毁时2，4会导致引用计数不为0，从而导致无法释放。
-
-**解决**：将m_ptr_a,m_ptr_b设置为weak_ptr后，不会增加引用计数，可以正常销毁
-
-
-![img](https://imgconvert.csdnimg.cn/aHR0cDovL2ltZy5raW5nd2F5LmZ1bi9JTUdNYXRyaXgvYmxvZy9jcHAvYzExMDAxLnBuZw)
-
-#### 4.1.4 智能指针的实现
+#### 3.6.2 list赋值交换
 
 ```c++
-1 #include <iostream>
- 2 #include <memory>
- 3 
- 4 template<typename T>
- 5 class SmartPointer {
- 6 private:
- 7     T* _ptr;
- 8     size_t* _count;
- 9 public:
-10     SmartPointer(T* ptr = nullptr) :
-11             _ptr(ptr) {
-12         if (_ptr) {
-13             _count = new size_t(1);
-14         } else {
-15             _count = new size_t(0);
-16         }
-17     }
-18 
-19     SmartPointer(const SmartPointer& ptr) {
-20         if (this != &ptr) {
-21             this->_ptr = ptr._ptr;
-22             this->_count = ptr._count;
-23             (*this->_count)++;
-24         }
-25     }
-26 
-27     SmartPointer& operator=(const SmartPointer& ptr) {
-28         if (this->_ptr == ptr._ptr) {
-29             return *this;
-30         }
-31 
-32         if (this->_ptr) {
-33             (*this->_count)--;
-34             if (this->_count == 0) {
-35                 delete this->_ptr;
-36                 delete this->_count;
-37             }
-38         }
-39 
-40         this->_ptr = ptr._ptr;
-41         this->_count = ptr._count;
-42         (*this->_count)++;
-43         return *this;
-44     }
-45 
-46     T& operator*() {
-47         assert(this->_ptr == nullptr);
-48         return *(this->_ptr);
-49 
-50     }
-51 
-52     T* operator->() {
-53         assert(this->_ptr == nullptr);
-54         return this->_ptr;
-55     }
-56 
-57     ~SmartPointer() {
-58         (*this->_count)--;
-59         if (*this->_count == 0) {
-60             delete this->_ptr;
-61             delete this->_count;
-62         }
-63     }
-64 
-65     size_t use_count(){
-66         return *this->_count;
-67     }
-68 };
-69 
-70 int main() {
-71     {
-72         SmartPointer<int> sp(new int(10));
-73         SmartPointer<int> sp2(sp);
-74         SmartPointer<int> sp3(new int(20));
-75         sp2 = sp3;
-76         std::cout << sp.use_count() << std::endl;
-77         std::cout << sp3.use_count() << std::endl;
-78     }
-79     //delete operator
-80 }
+list<int>v1;
+list<int>v2=v1;  //等号赋值
+list<int>v3.assign(v1.begin(),v1.end());  //迭代器
+list<int>v4.assign(10,100)				//10个100
+list<int>v4.swap(v1)				//交换
 ```
 
+#### 3.6.3 deque大小操作
 
+- empty();
+- **capacity();    （X)     deque没有容量的概念**
+- size();
+- resize(int num); //重新指定长度，比原先长则默认值填充，比原先短则删除后面的元素
+- resize(int num , elem);   //重新指定长度，比原先长则elem填充比原先短则删除后面的元素
 
+#### 3.6.4 list插入删除
 
+- push_back(elem);
 
+- push_front(elem);
 
+- pop_back();
 
+- pop_front();
 
+  
 
+- insert(const_iterator pos , elem);                             //返回新数据位置
 
+- insert(const_iterator pos , int count , elem);          //无返回
 
+- insert(const_iterator pos , begin,end);                    //插入区间元素，无返回
 
+- erase(const_iterator pos);
 
+- erase(const_iterator start , const_iterator end);    //返回下一个数据位置
 
+- clear();                                                                           //返回下一个数据位置
 
+- remove(elem)                                                              //删除所有等于elem的元素
+
+#### 3.6.5 list数据存取
+
+- front();
+- back();
+
+#### 3.6.6 list反转和排序
+
+- reverse();
+- sort();   //有一个重载，可以自定义方法排序
+
+------
+
+### 3.7 set
+
+关联式容器，自动排序，底层为二叉树（红黑树）；
+
+set不允许重复元素，muitiset允许；
+
+#### 3.7.1 set构造和赋值
+
+```c++
+set<int> st;
+set<int>st2(st);
+
+set<int> st3 = st;
+```
+
+#### 3.7.1 set大小和交换
+
+无resize，因为不能有重复元素
+
+- size();
+- empty();
+- swap();
+
+#### 3.7.2 set插入删除
+
+- insert(elem);
+- clear();
+- erase(pos);
+- erase(begin,end);
+- erase(elem);
+
+#### 3.7.2 set查找和统计
+
+- find(key);  //查找key是否存在，存在则返回该元素迭代器，否则返回set.end();
+- count(key);
+
+#### 3.7.3 set与multiset
+
+- set不可重复，multiset可以
+- set插入同时返回插入结果(一个对组，第二个值为bool），multiset则无
+
+#### 3.7.4 pair对组
+
+- pair<type,type> p (value1,value2);
+- pair<type,type> p =  make_pair(value1,value2);
+
+#### 3.7.5 set排序
+
+set本身是从大到小，利用仿函数改变规则
+
+```c++
+class MyCompare
+{
+    public:
+    	bool operator()(int v1,int v2)
+        {
+            return v1>v2;//这是降序
+		}
+}
+
+set<int,MyCompare>S2;
+```
+
+------
+
+### 3.8 map/multimap
+
+map中都是键值对<key,value>;
+
+根据元素key自动排序；
+
+关联式容器，底层为二叉树；
+
+map中key不可重复，multimap可以；
+
+key为map.first;   value: map.second;
+
+#### 3.8.1 map构造赋值
+
+```c++
+map<T1,T2> MP;
+map<T1,T2> MP2(MP);
+
+mp3= mp;
+```
+
+#### 3.8.2 map大小和交换
+
+- size();
+- empty();
+- swap();
+
+#### 3.8.3 map插入删除
+
+- insert(elem);   
+- clear();
+- erase(pos);
+- erase(begin,end);
+- erase(key);
+
+```c++
+mp.insert(pair<int,int>(10,10));
+mp.insert(make_pair(10,10));
+mp[1]=10;  //插入少用，如果该key没有对应值，会产生一个默认值，访问时用
+
+mp.erase(1);
+mp.erase(mp.begin());
+```
+
+#### 3.8.4 map查找和统计
+
+- find(key);  //查找key是否存在，存在则返回该元素迭代器，否则返回map.end();
+- count(key);
+
+#### 3.8.5 map排序
+
+set本身是从大到小，利用仿函数改变规则
+
+```c++
+class MyCompare
+{
+    public:
+    	bool operator()(int v1,int v2)
+        {
+            return v1>v2;//这是降序
+		}
+}
+
+map<int,int,MyCompare>mp;
+```
+
+------
