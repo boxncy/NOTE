@@ -27,13 +27,16 @@ git reset HEAD^              			 //上一版本
     
 git branch 分支名						   //创建分支
 git branch -v						     //查看分支
-git checkout 分支名					   //切换分支
+git checkout 分支名/commit号					   //切换分支
 git merge 分支名					   	   //把指定分支合并到当前分支
     
 git remote -v                            //查看所有远程仓库别名
 git remote add 别名 远程地址               //起别名
 git clone                                //克隆到本地
+git push origin dev -u					 //本地dev push到origin的dev -u表示同时建立关联，以后再推送到远程只需git push origin
 git push 别名 分支                        //推送本地分支上的内容克隆到本地???
+git push origin local_branch:remote_branch  
+//这个操作，local_branch必须为你本地存在的分支，remote_branch为远程分支，如果remote_branch不存在则会自动创建分支。    
 git pull 别名 分支                        //远程拉取并与本地分支合并
 ```
 
