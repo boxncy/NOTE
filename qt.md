@@ -730,3 +730,85 @@ printf("使用auto关键字\n");
                (*iter).x, (*iter).y);
     }
 ```
+
+#### 两种窗口的模态
+
+```c++
+setWindowModality(Qt::WindowModal);
+setWindowModality(Qt::ApplicationModal);
+```
+
+#### setWindowFlags ()
+
+```c++
+Qt::FrameWindowHint:没有边框的窗口
+Qt::WindowStaysOnTopHint://总在最上面的窗口
+Qt::CustomizeWindowHint://自定义窗口标题栏,以下标志必须与这个标志一起使用才有效,否则窗口将有默认的标题栏
+Qt::WindowTitleHint:显示窗口标题栏
+Qt::WindowSystemMenuHint://显示系统菜单
+Qt::WindowMinimizeButtonHint://显示最小化按钮
+Qt::WindowMaximizeButtonHint://显示最大化按钮
+Qt::WindowMinMaxButtonsHint://显示最小化按钮和最大化按钮
+Qt::WindowCloseButtonHint://显示关闭按钮 
+Qt::Drawer://去掉窗口左上角的图标，右上角的最大化最小化按钮（好像关闭按钮会变个样。。。）
+```
+
+#### 正则（linedit）
+
+```c++
+QRegExp rx = QRegExp("[^\\\\/<>*|?:\"\\s]*"); //任意个[]中的字符
+QRegExpValidator *validator = new QRegExpValidator(rx);
+linedit->setValidator(validator);
+linedit->setMaxLength(5); //设置最大输入限制5
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
