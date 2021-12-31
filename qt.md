@@ -764,9 +764,149 @@ linedit->setMaxLength(5); //设置最大输入限制5
 
 
 
+### QGraphicsScene/View/Item
+
+#### 三种坐标系
+
+Item坐标系
+
+- Items位于它们自己的坐标系中。它的坐标都以点(0,0)为中心点，这也是所有变换的中心点
+- 子坐标与父坐标之间的差值等于在父坐标系下，父item与子item之间的距离
+
+场景坐标系
+
+- 场景坐标系统描述了每个最顶级item的位置
+
+- 场景中的每个item有场景位置与包围矩形，场景位置描述了item在场景坐标下的位置，
+
+  场景包围矩形则用于QGraphicsScene决定场景中哪块区域发生了变化。
+
+- 场景中的变化通过QGraphicsScene::changed()信号来通知，它的参数是场景矩形列表
+
+视图坐标系
+
+- 视图坐标是widget的坐标，视图坐标中每个单位对应一个像素。
+
+- 视图坐标不会被所观察的场景所影响。QGraphicsView的视口的左上角总是（0，0），
+
+  右下角总是(视口宽，视口高）。
+
+- 所有的鼠标事件与拖拽事件，最初以视图坐标表示，应该把这些坐标映射到场景坐标以便与item交互。
+
+  
+
+#### 坐标映射
+
+在场景与item之间，item与item之间，视图与场景之间进行坐标映射，形状映射是非常有用的。
+
+**例：当你在QGraphicsView的视口中点击鼠标时，获知光标下是场景中的哪个item？**
+
+1. 调用QGraphicsView::mapToScence()；坐标映射；
+2. 调用QGraphicsScene::itemAt()；获取item；
+
+**例：你想获知一个item位于视口中的什么位置？**
+
+1. item上调用QGraphicsItem::mapToScene()；坐标映射；
+2. 调用QGraphicsView::mapFromScene()；坐标映射；
+
+**例：你想在一个视图椭圆中有哪些items？**
+
+1. QPainterPath传递到mapToScene()；坐标映射；
+2. 映射后的路径传递到QGraphicsScene::items()；获取item；
+
+**PS:**
+
+- 调用QGraphicsItem::mapToScene()与QGraphicsItem::mapFromScene()；
+
+  在item与场景之间进行坐标与形状的映射。
+
+- 在item与其父item之间通过，
+
+  QGraphicsItem::mapToParent()；QGraphicsItem::mapFromItem()；进行映射。
+
+- 所有映射函数可以包括点，矩形，多边形，路径。视图与场景之间的映射也与此类似。
+
+- 对于从视图与item之间的映射，你应该首先映射到场景，然后再从场景向item进行映射。
 
 
 
+#### QGraphticsScene
+
+场景——QGraphticsScene管理items，可受多个QGraphicsView监视，提供操作/获取items的接口
+
+- 将场景中的事件传递到item中（如点击位置的item）
+- 控制item的focus，获得当前focus_item
+- 将部分场景传递到绘图设备进行渲染
+
+
+
+#### QGraphicsView
+
+可视化场景中的内容，多视图可连接一个场景，为一份数据提供多个视口，是一个滚动区域
+
+GraphicsView::setViewport()来把一个QGLWidget设为视口。
+
+- 视图输入鼠标键盘等事件，传入到场景中时，自动将视口坐标转化为场景坐标
+- 坐标转换的函数：QGraphicsView::mapToScene()； QGraphicsView::mapForScene()；
+- QGraphicsView默认带有内边距和边界
+
+**旋转与缩放**
+
+- QGraphicsView通过QGraphicsView::setMatrix()支持同QPainter一样的仿射变换
+- 当对视图变换时，QGraphicsView会对视图中心进行校正。
+
+**拖拽**
+
+- QGraphicsView继承自QWidget,它也提供了像QWidget那样的拖拽功能
+- 当视图接收到拖拽事件，它可翻译为QGraphicsSceneDragDropEvent,再发送到场景
+- 场景接管这个事件，把它发送到光标下接受拖拽的第一个item
+- 一个item开始拖拽时，创建一个QDrag对象，传递开始拖拽的那个widget的指针
+-  mousePressEvent()或mouseMoveEvent()中，你可以从事件中得到那个原始的widget指针
+
+```c++
+ void CustomItem::mousePressEvent(QGraphicsSceneMouseEvent *event) 
+ { 
+     QMimeData *data=new QMimeData; 
+     data->setColor(Qt::green); 
+     QDrag *drag=new QDrag(event->widget()); 
+     drag->setMimeData(data); 
+     drag->start(); 
+ } 
+```
+
+-  为了在场景中载取拖拽事件，你应重新实现
+
+  QGraphicsScene::dragEnterEvent();
+
+  和在QGraphicsItem的子类里任何与你特定场景需要的事件处理器。
+
+- items也可以通过调用QGraphicsItem::setAcceptDrops()获得拖拽支持,
+
+  为了处理将要进行的拖拽，你需要重新实现,
+
+  QGraphicsItem::dragEnterEvent();
+
+  QGraphicsItem::dragMoveEvent();
+
+  QGraphicsItem::dragLeaveEvent();
+
+  QGraphicsItem::dropEvent();
+
+#### QGraphicsItem
+
+图形items的基类，提供了一些典型的形状如，矩形、椭圆、文本，接收许多事件
+
+- 具有本地坐标系，同时提供多种坐标转换接口
+- 通过matrix();进行旋转、缩放，通过shape();返回形状
+- 碰撞检测colludeWith();可以重写
+
+**item组**
+
+- 通过把一个item做为另一个item的孩子，你可以得到item组的大多数本质特性。
+- 这些items会一起移动，所有变换 会从父到子传递。
+- QGraphicsItem也可以为它的孩子处理所有的事件，这样就允许以父亲代表它所有的孩子，可以有效地把所有的items看作一个整体。 
+- 另外，QGraphicsItemGroup是一个特殊的item,它既对孩子事件进行处理又有一个接口把items从一个组中增加和删除。把一个item加到 QGraphicsItemGroup仍会保留item的原始位置与变换。
+- 而给一个item重新指定父item则会让item根据其新的父亲重新定位。可以用QGraphicsScene::createItemGroup()建组。
 
 
 
