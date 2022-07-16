@@ -1,7 +1,5 @@
 CMAKE
-涛哥dll
-涛哥qt
-c++内存管理，问题shared_ptr unique_ptr weak_ptr 场景？实现？操作系统虚拟内存、运行时进程内存布局
+操作系统虚拟内存、运行时进程内存布局
 c++多线程
 
 ## qt
@@ -322,6 +320,12 @@ selection-color:rgb(241, 70, 62); 用来设定选中时候的颜色
 
 可以使用border-top，border-right，border-bottom，border-left分别设定按钮的上下左右边框，
 同样有border-left-color, border-left-style, border-left-width.等分别来设定他们的颜色，样式和宽度
+
+#### 获取类名
+
+```c++
+bool res = obj->metaObject()->className() == QStringLiteral("需要对比的类名称");
+```
 
 
 
@@ -766,6 +770,12 @@ linedit->setMaxLength(5); //设置最大输入限制5
 
 ### QGraphicsScene/View/Item
 
+setPos的坐标是**父类坐标系的坐标，一般对于item位于scene中的应用场景**。
+
+translate()将当前视图坐标原点平移，从而实现显示图像的平移变换。由于默认场景的左上角顶点与视图坐标原点对齐，translate()将坐标原点平移，也就实现了将场景的平移。
+
+rotate()将当前视图围绕视图坐标原点旋转，从而实现显示图像的旋转变换
+
 #### 三种坐标系
 
 Item坐标系
@@ -910,23 +920,33 @@ GraphicsView::setViewport()来把一个QGLWidget设为视口。
 
 
 
-QUndoStack
+### QUndoStack
+
+### QEvent
+
+### QVariant
+
+```c++
+QMap<EnumPipelineType,QVector<EnumClassType>> map;
+map.insert()....
+QVariant var = QVariant::fromValue(map);
+
+QMap<EnumPipelineType,QVector<EnumClassType>> mapConfigInfo = var.value<QMap<EnumPipelineType,QVector<EnumClassType>>>();
+```
+
+### ToolBar
+
+| addAction()      | 添加具有文本或图标的工具按钮                     |
+| ---------------- | ------------------------------------------------ |
+| addSeperator()   | 分组显示工具按钮                                 |
+| addWidget()      | 添加工具栏中按钮以外的控件                       |
+| addToolBar()     | 使用QMainWindow类的方法添加一个新的工具栏        |
+| setMovale()      | 工具栏变得可移动                                 |
+| setOrientation() | 工具栏的方向可以设置为Qt.Horizontal或Qt.vertical |
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+qstringlist&vector<qstring>等价
 
 
 
