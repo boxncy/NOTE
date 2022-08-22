@@ -770,6 +770,8 @@ linedit->setMaxLength(5); //设置最大输入限制5
 
 ### QGraphicsScene/View/Item
 
+**事件传递顺序：view--scene--subitem--item**
+
 setPos的坐标是**父类坐标系的坐标，一般对于item位于scene中的应用场景**。
 
 translate()将当前视图坐标原点平移，从而实现显示图像的平移变换。由于默认场景的左上角顶点与视图坐标原点对齐，translate()将坐标原点平移，也就实现了将场景的平移。
