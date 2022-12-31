@@ -950,21 +950,75 @@ QMap<EnumPipelineType,QVector<EnumClassType>> mapConfigInfo = var.value<QMap<Enu
 
 qstringlist&vector<qstring>等价
 
+### 设置鼠标中心点缩放
+
+```c++
+    setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
+    setResizeAnchor(QGraphicsView::AnchorUnderMouse);
+```
 
 
 
+### QBrush坑
 
+如果 qbrush初始化为空时，需要设置Qt::SolidPattern，否则设置颜色无效
 
+```C++
+ ItemDetail(){
+        brush_.setStyle(Qt::SolidPattern);
+    }
+    int type_ = 0;
+    ItemStyle style_;
+    QPen pen_;
+    QBrush brush_;
+    bool handles_visible_ = false;
+    bool sample_handles = true;
+    QList<QSharedPointer<AQHandleItem>> handles_;
+    QPainterPath label_path_;
+    QSharedPointer<AQHandleItem> current_handle_;
+```
 
+### 黑白棋盘背景
 
+```c++
 
+#include "QtWidgetsApplication2.h"
+#include<QPixmap>
+#include<QPainter>
+QtWidgetsApplication2::QtWidgetsApplication2(QWidget *parent)
+    : QWidget(parent)
+{
+    ui.setupUi(this);
+    QPixmap pm(20, 20);
+    QPainter pmp(&pm);
+    pmp.fillRect(0, 0, 10, 10, Qt::lightGray);
+    pmp.fillRect(10, 10, 10, 10, Qt::lightGray);
+    pmp.fillRect(0, 10, 10, 10, Qt::darkGray);
+    pmp.fillRect(10, 0, 10, 10, Qt::darkGray);
+    pmp.end();
+    QPalette pal = palette();
+    pal.setBrush(backgroundRole(), QBrush(pm));
+    setAutoFillBackground(true);
+    setPalette(pal);
+}
+```
 
+不要边setpos边mapto
 
+### View派生类中的paintEvent:绘制设备返回的引擎== 0，类型:1
 
+同样画黑白棋盘
 
+```c++
+//报错
+QWidget::paintEngine: Should no longer be called
+QPainter::begin: Paint device returned engine == 0, type: 1
+```
 
-
-
+```c++
+//由于View是QAbstractScrollArea的子类，因此应在其视口中打开QPainter:
+QTableView::paintEvent(event);
+```
 
 
 
